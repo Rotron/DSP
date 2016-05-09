@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Dsp
-# Generated: Sun May  8 11:14:43 2016
+# Generated: Mon May  9 01:39:03 2016
 ##################################################
 
 if __name__ == '__main__':
@@ -58,25 +58,32 @@ class DSP(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
+        self.variable_qtgui_range_4 = variable_qtgui_range_4 = 3000
+        self.variable_qtgui_range_3 = variable_qtgui_range_3 = 3000
         self.variable_qtgui_range_2 = variable_qtgui_range_2 = 0.5
         self.variable_qtgui_range_1 = variable_qtgui_range_1 = 2700
         self.variable_qtgui_range_0 = variable_qtgui_range_0 = 50
-        self.step = step = 50
+        self.step = step = 10
         self.samp_rate = samp_rate = 6000
 
         ##################################################
         # Blocks
         ##################################################
+        self._variable_qtgui_range_4_range = Range(0, 3000, step, 3000, 200)
+        self._variable_qtgui_range_4_win = RangeWidget(self._variable_qtgui_range_4_range, self.set_variable_qtgui_range_4, "HIGHT BLOCK", "counter_slider", float)
+        self.top_layout.addWidget(self._variable_qtgui_range_4_win)
+        self._variable_qtgui_range_3_range = Range(0, 3000, step, 3000, 200)
+        self._variable_qtgui_range_3_win = RangeWidget(self._variable_qtgui_range_3_range, self.set_variable_qtgui_range_3, "LOW BLOCK", "counter_slider", float)
+        self.top_layout.addWidget(self._variable_qtgui_range_3_win)
         self._variable_qtgui_range_2_range = Range(0, 1, 0.01, 0.5, 200)
         self._variable_qtgui_range_2_win = RangeWidget(self._variable_qtgui_range_2_range, self.set_variable_qtgui_range_2, "VOLUME", "counter_slider", float)
         self.top_layout.addWidget(self._variable_qtgui_range_2_win)
         self._variable_qtgui_range_1_range = Range(0, 3000, step, 2700, 200)
-        self._variable_qtgui_range_1_win = RangeWidget(self._variable_qtgui_range_1_range, self.set_variable_qtgui_range_1, "HIGHT", "counter_slider", float)
+        self._variable_qtgui_range_1_win = RangeWidget(self._variable_qtgui_range_1_range, self.set_variable_qtgui_range_1, "HIGHT PASS", "counter_slider", float)
         self.top_layout.addWidget(self._variable_qtgui_range_1_win)
         self._variable_qtgui_range_0_range = Range(0, 3000, step, 50, 200)
-        self._variable_qtgui_range_0_win = RangeWidget(self._variable_qtgui_range_0_range, self.set_variable_qtgui_range_0, "LOW ", "counter_slider", float)
+        self._variable_qtgui_range_0_win = RangeWidget(self._variable_qtgui_range_0_range, self.set_variable_qtgui_range_0, "LOW PASS", "counter_slider", float)
         self.top_layout.addWidget(self._variable_qtgui_range_0_win)
-        self.single_pole_iir_filter_xx_0 = filter.single_pole_iir_filter_ff(1.0, 1)
         self.qtgui_freq_sink_x_1 = qtgui.freq_sink_f(
         	1024, #size
         	firdes.WIN_BLACKMAN_hARRIS, #wintype
@@ -160,8 +167,10 @@ class DSP(gr.top_block, Qt.QWidget):
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_freq_sink_x_0_win)
         self.dc_blocker_xx_0 = filter.dc_blocker_ff(32, True)
+        self.band_reject_filter_0 = filter.fir_filter_fff(1, firdes.band_reject(
+        	1, samp_rate, variable_qtgui_range_3, variable_qtgui_range_4, 10, firdes.WIN_HAMMING, 6.76))
         self.band_pass_filter_0 = filter.fir_filter_fff(1, firdes.band_pass(
-        	variable_qtgui_range_2, samp_rate, variable_qtgui_range_0, variable_qtgui_range_1, 50, firdes.WIN_HAMMING, 6.76))
+        	variable_qtgui_range_2, samp_rate, variable_qtgui_range_0, variable_qtgui_range_1, 10, firdes.WIN_HAMMING, 6.76))
         self.audio_source_0 = audio.source(samp_rate, "", True)
         self.audio_sink_0 = audio.sink(samp_rate, "", True)
 
@@ -170,10 +179,10 @@ class DSP(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.audio_source_0, 0), (self.dc_blocker_xx_0, 0))    
         self.connect((self.audio_source_0, 0), (self.qtgui_freq_sink_x_1, 0))    
-        self.connect((self.band_pass_filter_0, 0), (self.single_pole_iir_filter_xx_0, 0))    
+        self.connect((self.band_pass_filter_0, 0), (self.band_reject_filter_0, 0))    
+        self.connect((self.band_reject_filter_0, 0), (self.audio_sink_0, 0))    
+        self.connect((self.band_reject_filter_0, 0), (self.qtgui_freq_sink_x_0, 0))    
         self.connect((self.dc_blocker_xx_0, 0), (self.band_pass_filter_0, 0))    
-        self.connect((self.single_pole_iir_filter_xx_0, 0), (self.audio_sink_0, 0))    
-        self.connect((self.single_pole_iir_filter_xx_0, 0), (self.qtgui_freq_sink_x_0, 0))    
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "DSP")
@@ -181,26 +190,40 @@ class DSP(gr.top_block, Qt.QWidget):
         event.accept()
 
 
+    def get_variable_qtgui_range_4(self):
+        return self.variable_qtgui_range_4
+
+    def set_variable_qtgui_range_4(self, variable_qtgui_range_4):
+        self.variable_qtgui_range_4 = variable_qtgui_range_4
+        self.band_reject_filter_0.set_taps(firdes.band_reject(1, self.samp_rate, self.variable_qtgui_range_3, self.variable_qtgui_range_4, 10, firdes.WIN_HAMMING, 6.76))
+
+    def get_variable_qtgui_range_3(self):
+        return self.variable_qtgui_range_3
+
+    def set_variable_qtgui_range_3(self, variable_qtgui_range_3):
+        self.variable_qtgui_range_3 = variable_qtgui_range_3
+        self.band_reject_filter_0.set_taps(firdes.band_reject(1, self.samp_rate, self.variable_qtgui_range_3, self.variable_qtgui_range_4, 10, firdes.WIN_HAMMING, 6.76))
+
     def get_variable_qtgui_range_2(self):
         return self.variable_qtgui_range_2
 
     def set_variable_qtgui_range_2(self, variable_qtgui_range_2):
         self.variable_qtgui_range_2 = variable_qtgui_range_2
-        self.band_pass_filter_0.set_taps(firdes.band_pass(self.variable_qtgui_range_2, self.samp_rate, self.variable_qtgui_range_0, self.variable_qtgui_range_1, 50, firdes.WIN_HAMMING, 6.76))
+        self.band_pass_filter_0.set_taps(firdes.band_pass(self.variable_qtgui_range_2, self.samp_rate, self.variable_qtgui_range_0, self.variable_qtgui_range_1, 10, firdes.WIN_HAMMING, 6.76))
 
     def get_variable_qtgui_range_1(self):
         return self.variable_qtgui_range_1
 
     def set_variable_qtgui_range_1(self, variable_qtgui_range_1):
         self.variable_qtgui_range_1 = variable_qtgui_range_1
-        self.band_pass_filter_0.set_taps(firdes.band_pass(self.variable_qtgui_range_2, self.samp_rate, self.variable_qtgui_range_0, self.variable_qtgui_range_1, 50, firdes.WIN_HAMMING, 6.76))
+        self.band_pass_filter_0.set_taps(firdes.band_pass(self.variable_qtgui_range_2, self.samp_rate, self.variable_qtgui_range_0, self.variable_qtgui_range_1, 10, firdes.WIN_HAMMING, 6.76))
 
     def get_variable_qtgui_range_0(self):
         return self.variable_qtgui_range_0
 
     def set_variable_qtgui_range_0(self, variable_qtgui_range_0):
         self.variable_qtgui_range_0 = variable_qtgui_range_0
-        self.band_pass_filter_0.set_taps(firdes.band_pass(self.variable_qtgui_range_2, self.samp_rate, self.variable_qtgui_range_0, self.variable_qtgui_range_1, 50, firdes.WIN_HAMMING, 6.76))
+        self.band_pass_filter_0.set_taps(firdes.band_pass(self.variable_qtgui_range_2, self.samp_rate, self.variable_qtgui_range_0, self.variable_qtgui_range_1, 10, firdes.WIN_HAMMING, 6.76))
 
     def get_step(self):
         return self.step
@@ -213,7 +236,8 @@ class DSP(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.band_pass_filter_0.set_taps(firdes.band_pass(self.variable_qtgui_range_2, self.samp_rate, self.variable_qtgui_range_0, self.variable_qtgui_range_1, 50, firdes.WIN_HAMMING, 6.76))
+        self.band_pass_filter_0.set_taps(firdes.band_pass(self.variable_qtgui_range_2, self.samp_rate, self.variable_qtgui_range_0, self.variable_qtgui_range_1, 10, firdes.WIN_HAMMING, 6.76))
+        self.band_reject_filter_0.set_taps(firdes.band_reject(1, self.samp_rate, self.variable_qtgui_range_3, self.variable_qtgui_range_4, 10, firdes.WIN_HAMMING, 6.76))
         self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate)
         self.qtgui_freq_sink_x_1.set_frequency_range(0, self.samp_rate)
 
